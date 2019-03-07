@@ -208,7 +208,7 @@ with tf.Graph().as_default():
     init = tf.global_variables_initializer()
  
     saver = tf.train.Saver()
-    sv = tf.train.Supervisor(logdir="models/", init_op=init)  # logdir��������checkpoint��summary
+    sv = tf.train.Supervisor(logdir="logs/", init_op=init)  # logdir��������checkpoint��summary
     saver=sv.saver    
     
     with sv.managed_session() as session:
@@ -224,5 +224,5 @@ with tf.Graph().as_default():
             print("Epoch: %d Valid Perplexity: %.3f" % (i + 1, valid_perplexity))
         test_perplexity = run_epoch(session, mtest)
         print("Test Perplexity: %.3f" % test_perplexity)
-#         saver.save(session,'models/PTB')
+#         saver.save(session,'logs/PTB')
          
