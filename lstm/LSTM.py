@@ -177,11 +177,11 @@ def run_epoch(session, model, eval_op=None, verbose=False):
     return np.exp(costs / iters)
 
 # 得到文本中词序列所对应的索引序列
-raw_data = reader.ptb_raw_data('data/penn/')
+raw_data = reader.ptb_raw_data('lstm/simple-examples/data/')
 train_data, valid_data, test_data, _ = raw_data 
  
-config = LargeConfig()
-eval_config = LargeConfig()
+config = SmallConfig()
+eval_config = SmallConfig()
 eval_config.batch_size = 1
 eval_config.num_steps = 1
 
