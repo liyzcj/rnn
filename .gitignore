@@ -3,3 +3,4 @@
 __pycache__
 simple-examples*
 logs
+.ipynb_checkpoints
