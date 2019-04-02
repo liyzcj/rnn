@@ -161,10 +161,12 @@ def run_epoch(session, model, eval_op=None, verbose=False):
     if eval_op is not None:
         fetches["eval_op"] = eval_op
     for step in range(model.input.epoch_size):
-        feed_dict = {}
-        for i, (c, h) in enumerate(model.initial_state):
-            feed_dict[c] = state[i].c
-            feed_dict[h] = state[i].h
+        # 完全没有必要使用for循环, 直接将state 赋值给initial_state
+        # 可能是因为旧版本不支持?
+        feed_dict = {model.initial_state: state}
+        # for i, (c, h) in enumerate(model.initial_state):
+        #     feed_dict[c] = state[i].c
+        #     feed_dict[h] = state[i].h
         vals = session.run(fetches, feed_dict)
         cost = vals["cost"]
         state = vals["final_state"]
@@ -177,7 +179,7 @@ def run_epoch(session, model, eval_op=None, verbose=False):
     return np.exp(costs / iters)
 
 # 得到文本中词序列所对应的索引序列
-raw_data = reader.ptb_raw_data('lstm/simple-examples/data/')
+raw_data = reader.ptb_raw_data('test/data/')
 train_data, valid_data, test_data, _ = raw_data 
  
 config = SmallConfig()
