@@ -4,7 +4,7 @@ import os
 import tensorflow as tf
 
 
-# os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 # config = tf.ConfigProto(graph_options=tf.GraphOptions(
 #         optimizer_options=tf.OptimizerOptions(opt_level=tf.OptimizerOptions.L0)))
@@ -61,14 +61,16 @@ with tf.name_scope("Test"):
     with tf.variable_scope("Model", reuse=True, initializer=initializer):
         test_model = PTBModel(test_params, test_input)
 
-init = tf.global_variables_initializer()
+init = tf.group(*[tf.global_variables_initializer(), tf.tables_initializer()])
 
-saver = tf.train.Saver()
-sv = tf.train.Supervisor(logdir="test/language_model/logs/", init_op=init)
-saver=sv.saver
+# saver = tf.train.Saver()
+# sv = tf.train.Supervisor(logdir="test/language_model/logs/", init_op=init)
+# saver=sv.saver
 
 
-with sv.managed_session(config=config) as sess:
+# with sv.managed_session(config=config) as sess:
+with tf.Session() as sess:
+    sess.run(init)
     sess.run(train_input.init_op)
     sess.run(valid_input.init_op)
     sess.run(test_input.init_op)

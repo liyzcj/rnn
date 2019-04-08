@@ -130,6 +130,7 @@ class PTBModel(Model):
             return logits
 
     def _build_loss(self, logits):
+        self._y = tf.transpose(self._y)
         bs = self.params.batch_size
         ts = self.params.time_steps
         with tf.name_scope("Loss"):
