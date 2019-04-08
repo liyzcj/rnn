@@ -31,10 +31,10 @@ class Inputs(metaclass=ABCMeta):
 
 class PTBInputs(Inputs):
 
-    def __init__(self, file_path, params):
+    def __init__(self, file_path, params, words):
         self.params = params
         print("instanciate a PTBInputs!")
-        data = self._data_preprocess(file_path)
+        data = self._data_preprocess(file_path, words)
         self._next_batch = self._batch_generater(data)
         # print(data.shape)
         # print(data[-10:])
@@ -42,7 +42,7 @@ class PTBInputs(Inputs):
         # self._batches_one_epoch = (data.shape[0] // params.batch_size -1) // params.time_steps
         # self._generator = self._batch_generater(data, params)
 
-    def _data_preprocess(self, file_path):
+    def _data_preprocess(self, file_path, words):
         bs = self.params.batch_size
         ts = self.params.time_steps
         with tf.gfile.GFile(file_path, "r") as f:
@@ -57,7 +57,7 @@ class PTBInputs(Inputs):
             y = data[1:]
             x = tf.data.Dataset.from_tensor_slices(x)
             y = tf.data.Dataset.from_tensor_slices(y)
-            words = tf.contrib.lookup.index_table_from_file("test/data/vocab.txt")
+
             x = x.map(lambda tokens: (words.lookup(tokens)))
             y = y.map(lambda tokens: (words.lookup(tokens)))
             data = tf.data.Dataset.zip((x,y))

@@ -31,6 +31,7 @@ data_path = "test/data/"
 train_path = os.path.join(data_path, "ptb.train.txt")
 valid_path = os.path.join(data_path, "ptb.valid.txt")
 test_path = os.path.join(data_path, "ptb.test.txt")
+words = tf.contrib.lookup.index_table_from_file("test/data/vocab.txt")
 
 if not os.path.exists(train_path):
     raise Exception("no such file.")
@@ -44,19 +45,19 @@ initializer = tf.random_uniform_initializer(-0.1,0.1)
 
 with tf.name_scope("Train"):
     with tf.name_scope("TrainInputs"):
-        train_input = PTBInputs(train_path, train_params)
+        train_input = PTBInputs(train_path, train_params, words)
     with tf.variable_scope("Model", reuse=None, initializer=initializer):
         train_model = PTBModel(train_params, train_input, is_training=True)
 
 with tf.name_scope("Valid"):
     with tf.name_scope("ValidInputs"):
-        valid_input = PTBInputs(valid_path, train_params)
+        valid_input = PTBInputs(valid_path, train_params, words)
     with tf.variable_scope("Model", reuse=True, initializer=initializer):
         valid_model = PTBModel(train_params, valid_input)
     
 with tf.name_scope("Test"):
     with tf.name_scope("TestInputs"):
-        test_input = PTBInputs(test_path, test_params)
+        test_input = PTBInputs(test_path, test_params, words)
     with tf.variable_scope("Model", reuse=True, initializer=initializer):
         test_model = PTBModel(test_params, test_input)
 
