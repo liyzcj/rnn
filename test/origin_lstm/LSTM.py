@@ -134,7 +134,7 @@ class SmallConfig(object):
     num_steps = 20
     hidden_size = 200
     max_epoch = 4
-    max_max_epoch = 5
+    max_max_epoch = 1
     keep_prob = 1.0
     lr_decay = 0.5
     batch_size = 20
@@ -224,7 +224,7 @@ with tf.Graph().as_default():
             mvalid = PTBModel(is_training=False, config=config, input_=valid_input )
 
     with tf.name_scope("Test"):
-        test_input = PTBInput(config=config, data=test_data, name="TestInput")
+        test_input = PTBInput(config=eval_config, data=test_data, name="TestInput")
         with tf.variable_scope("Model", reuse=True, initializer=initializer):
             mtest = PTBModel(is_training=False, config=eval_config,
                              input_=test_input )
