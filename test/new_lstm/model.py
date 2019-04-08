@@ -70,6 +70,7 @@ class PTBModel(Model):
         is_training = self._is_training
         num_layers = self.params.num_layers
         batch_size = self.params.batch_size
+        ts = self.params.time_steps
         
         with tf.name_scope("LSTM"):
             
@@ -91,11 +92,20 @@ class PTBModel(Model):
             # Initializtion of hidden state, Reture the tensors of hiddenstate
             self._initial_state = stack_cell.zero_state(batch_size, tf.float32)
             # Use dynamic rnn unpack in time dimention
-            outputs, self._final_state = tf.nn.dynamic_rnn(
-                    stack_cell,
-                    inputs,
-                    initial_state = self._initial_state,
-                    )
+            # outputs, self._final_state = tf.nn.dynamic_rnn(
+            #         stack_cell,
+            #         inputs,
+            #         initial_state = self._initial_state,
+            #         )
+            state = self._initial_state
+            outputs = []
+            with tf.variable_scope("RNN"):
+                for t in range(ts):
+                    if t > 0: tf.get_variable_scope().reuse_variables()
+                    (cell_output, state) = stack_cell(inputs[:,t,:], state)
+                    outputs.append(cell_output)
+            outputs = tf.reshape(tf.concat(outputs, 1, name="outputs"), [-1, hidden_units], name="output")
+            self._final_state = state
             return outputs
 
     def _build_softmax(self, inputs):
@@ -193,7 +203,7 @@ class PTBModel(Model):
             # # Create the Timeline object, and write it to a json
             # fetched_timeline = timeline.Timeline(run_metadata.step_stats)
             # chrome_trace = fetched_timeline.generate_chrome_trace_format()
-            # with open('timeline_mine_step_%d.json' % step, 'w') as f:
+            # with open('timeline_newlstm_step_%d.json' % step, 'w') as f:
             #     f.write(chrome_trace)
             # #####################
         return np.exp(total_loss / iters)
