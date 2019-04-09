@@ -38,7 +38,7 @@ class PTBModel(Model):
         self._build_loss(logits)
         if not self._is_training:
             return
-
+        self._summries()
         self._build_optimizer()
         
         print("Build Compute Graph Success!")
@@ -141,6 +141,9 @@ class PTBModel(Model):
                 [tf.ones([bs * ts], dtype = tf.float32)])
                 
             self._loss = tf.reduce_sum(loss) / bs
+    def _summries(self):
+        tf.summary.scalar(name="Loss", tensor=self._loss)
+        self._summ_op = tf.summary.merge_all()
 
     def _build_optimizer(self):
         grad_clip = self.params.grad_clip
@@ -168,7 +171,7 @@ class PTBModel(Model):
             # lr update operation
             self._lr_update = tf.assign(self._lr, self._new_lr)
 
-    def run_one_epoch(self, sess):
+    def run_one_epoch(self, sess, writer=None):
         start_time = time.time()
         total_loss = 0.0
         iters = 0
@@ -180,6 +183,7 @@ class PTBModel(Model):
                 "final_state": self._final_state
                 }
         if self._is_training:
+            fetches["summaries"] = self._summ_op
             fetches["train_op"] = self._train_op
         
         boe = self._inputs.boe
@@ -195,7 +199,9 @@ class PTBModel(Model):
             fetch = sess.run(fetches, feed_dict=feed)
             loss = fetch["loss"]
             state = fetch["final_state"]
-
+            if self._is_training:
+                summ = fetch["summaries"]
+                writer.add_summary(summ, global_step=tf.train.global_step(sess, self.global_step))
             total_loss += loss
             iters += self.params.time_steps
             if self._is_training and step % (boe // 10) == 10:
