@@ -2,6 +2,7 @@ from inputs import PTBInputs
 from model import PTBModel
 import os
 import tensorflow as tf
+from tensorflow.contrib.tensorboard.plugins import projector
 
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
@@ -25,13 +26,13 @@ class Params:
     embedding_size = 200
     vocab_size = 10000
 
-restore_path = "test/language_model/save/last_weights"
-save_path = "test\\language_model\\save"
+restore_path = "test/language_model/save/model1"
+save_path = "test\\language_model\\save\\model1"
 data_path = "test/data/"
 train_path = os.path.join(data_path, "ptb.train.txt")
 valid_path = os.path.join(data_path, "ptb.valid.txt")
 test_path = os.path.join(data_path, "ptb.test.txt")
-words = tf.contrib.lookup.index_table_from_file("test/data/vocab.txt")
+words = tf.contrib.lookup.index_table_from_file("test/data/vocab.tsv")
 
 if not os.path.exists(train_path):
     raise Exception("no such file.")
@@ -74,7 +75,16 @@ with tf.Session(config=config) as sess:
     sess.run(train_input.init_op)
     sess.run(valid_input.init_op)
     sess.run(test_input.init_op)
-    writer = tf.summary.FileWriter(os.path.join(save_path, 'summaries'), sess.graph)
+    writer = tf.summary.FileWriter(save_path, sess.graph)
+
+    # Projector for embedding in tensorboard
+    proj_config = projector.ProjectorConfig()
+    embed = proj_config.embeddings.add()
+    embed.tensor_name = train_model.embedding.name
+    # spicfy the meta data for projector
+    embed.metadata_path = "vocab.tsv"
+    projector.visualize_embeddings(writer, proj_config)
+
     bae = 0
     # Reload weights if exits
     if os.path.exists(restore_path):
@@ -96,7 +106,7 @@ with tf.Session(config=config) as sess:
         valid_perplexity = valid_model.run_one_epoch(sess)
         print("Epoch: %d Valid Perplexity: %.3f" % (i + 1, valid_perplexity))
         # Save model
-        path = os.path.join(save_path, 'last_weights', 'after-epoch')
+        path = os.path.join(save_path, 'after-epoch')
         saver.save(sess, path, global_step=i+1)
     # test_perplexity = test_model.run_one_epoch(sess)
     # print("Test Perplexity: %.3f" % test_perplexity)
