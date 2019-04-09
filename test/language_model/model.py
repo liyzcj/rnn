@@ -50,11 +50,12 @@ class PTBModel(Model):
         """
         vocab_size = self.params.vocab_size
         embedding_size = self.params.embedding_size
-        with tf.name_scope("Inputs"):
-            
-            batch = self._inputs.next_batch
-            self._x = batch['inputs']
-            self._y = batch['targets']
+         
+        batch = self._inputs.next_batch
+        self._x = batch['inputs']
+        self._y = batch['targets']
+
+        with tf.name_scope("Embedding"):
             with tf.device("/cpu:0"):
                 self.embedding = tf.get_variable(
                     "Embedding", 
