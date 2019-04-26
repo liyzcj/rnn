@@ -92,7 +92,7 @@ with tf.Session(config=config) as sess:
         if os.path.isdir(restore_path):
             restore_path = tf.train.latest_checkpoint(restore_path)
             # Begin at epoch
-            bae = int(restore_path.split('-')[-1])
+        bae = int(restore_path.split('-')[-1])
         saver.restore(sess, restore_path)
 
     # end of epoch 
